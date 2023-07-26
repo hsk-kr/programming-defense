@@ -1,4 +1,11 @@
-import { ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ComponentProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Layer, Image, Rect, Text as ReactKonvaText, Group } from 'react-konva';
 import UISet from '../../assets/ui/ui-set.png';
 import { useGameContext } from '../../context/GameContext';
@@ -6,6 +13,7 @@ import { useGlobalContext } from '../../context/GlobalContext';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { upgradeCost } from '../../const/calc';
 import { UNIT_CNT_LIMIT, UNIT_GENERATION_COST } from '../../const/unit';
+import UnitPreview from '../UnitPreview';
 
 const WIDTH = 960;
 const HEIGHT = 320;
@@ -31,6 +39,7 @@ interface Icons {
   heart?: HTMLImageElement;
   mob?: HTMLImageElement;
   human?: HTMLImageElement;
+  delete?: HTMLImageElement;
 }
 
 const Text = (props: ComponentProps<typeof ReactKonvaText>) => (
@@ -50,10 +59,15 @@ const Status = ({ y }: StatusProps) => {
     speed,
     reload,
     moneyLevel,
+    unitList,
+    selectedUnitId,
     startIncreaseMoney,
     upgradeStatus,
     generateUnit,
+    sellSelectedUnit,
+    upgradeUnit,
   } = useGameContext();
+  const selectedUnit = unitList.find((unit) => unit.id === selectedUnitId);
 
   useEffect(() => {
     const uiImage = new window.Image();
@@ -91,6 +105,7 @@ const Status = ({ y }: StatusProps) => {
       await loadPartOfMap('heart', 12, 3);
       await loadPartOfMap('mob', 10, 3);
       await loadPartOfMap('human', 13, 3);
+      await loadPartOfMap('delete', 20, 2);
 
       setIcons(newIcons);
       imageForInitRef.current.visible(false);
@@ -98,6 +113,21 @@ const Status = ({ y }: StatusProps) => {
 
     setImageForInit(uiImage);
   }, []);
+
+  const handleMouseEnter = useCallback(
+    (tooltip: string) => (e: KonvaEventObject<MouseEvent>) => {
+      showTooltip({
+        text: tooltip,
+        x: e.evt.clientX,
+        y: e.evt.clientY,
+      });
+    },
+    [showTooltip]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    hideTooltip();
+  }, [hideTooltip]);
 
   const statusComponents = useMemo(() => {
     const [startX, startY, xGap, yGap] = [8, y + 10, 36, 48];
@@ -109,65 +139,46 @@ const Status = ({ y }: StatusProps) => {
       clickEvent?: VoidFunction;
     }[] = [
       {
-        label: `Level: ${level}`,
+        label: `LEVEL: ${level}`,
         icon: 'human',
         tooltip: `Stage`,
       },
       {
-        label: `Life: ${life}`,
+        label: `LIFE: ${life}`,
         icon: 'heart',
         tooltip: `If it reaches 0, the game will be over.`,
       },
       {
-        label: `Money: ${money} (+${moneyLevel})`,
+        label: `MONEY: ${money} (+${moneyLevel})`,
         icon: 'coin',
-        tooltip: `You can increase it by 1 by paying ${upgradeCost(
+        tooltip: `Increase it by 1 by paying ${upgradeCost(
           'moneyLevel',
           moneyLevel
-        )}. If you want to upgrade, click on it.`,
+        )}.`,
         clickEvent: upgradeStatus('moneyLevel'),
       },
       {
-        label: `Power: ${100 + power}% (+${power}%)`,
+        label: `POWER: ${100 + power}% (+${power}%)`,
         icon: 'redBook',
-        tooltip: `You can increase it by 1% by paying ${upgradeCost(
-          'power',
-          power
-        )}. If you want to upgrade, click on it.`,
+        tooltip: `Increase it by 1% by paying ${upgradeCost('power', power)}.`,
         clickEvent: upgradeStatus('power'),
       },
       {
-        label: `Speed: ${100 + speed}% (+${speed}%)`,
+        label: `SPEED: ${100 + speed}% (+${speed}%)`,
         icon: 'blueBook',
-        tooltip: `You can increase it by 1% by paying ${upgradeCost(
-          'speed',
-          speed
-        )}. If you want to upgrade, click on it.`,
+        tooltip: `Increase it by 1% by paying ${upgradeCost('speed', speed)}.`,
         clickEvent: upgradeStatus('speed'),
       },
       {
-        label: `Reload: ${100 - reload}% (-${reload}%)`,
+        label: `RELOAD: ${100 - reload}% (-${reload}%)`,
         icon: 'brownBook',
-        tooltip: `You can decrease it by 1% by paying ${upgradeCost(
+        tooltip: `Decrease it by 1% by paying ${upgradeCost(
           'reload',
           reload
-        )}. If you want to upgrade, click on it.`,
+        )}.`,
         clickEvent: upgradeStatus('reload'),
       },
     ];
-
-    const handleMouseEnter =
-      (tooltip: string) => (e: KonvaEventObject<MouseEvent>) => {
-        showTooltip({
-          text: tooltip,
-          x: e.evt.clientX,
-          y: e.evt.clientY,
-        });
-      };
-
-    const handleMouseLeave = () => {
-      hideTooltip();
-    };
 
     const generateUnitIconX = WIDTH / 2 - ICON_TILE_SIZE * 2 - 80;
 
@@ -192,24 +203,19 @@ const Status = ({ y }: StatusProps) => {
         ))}
         <Group
           onMouseEnter={handleMouseEnter(
-            `Generate a random unit by paying ${UNIT_GENERATION_COST}. You cannot generate units more than ${UNIT_CNT_LIMIT}.`
+            `Generate a random unit by paying ${UNIT_GENERATION_COST}. (Max Unit: ${UNIT_CNT_LIMIT})`
           )}
           onMouseLeave={handleMouseLeave}
           onClick={generateUnit}
+          y={startY}
         >
           <Image
             image={icons.mob}
             x={generateUnitIconX}
-            y={startY}
             width={ICON_TILE_SIZE * 2}
             height={ICON_TILE_SIZE * 2}
           />
-          <Text
-            y={startY + 4}
-            x={generateUnitIconX + xGap}
-            fontSize={24}
-            text="PICK"
-          />
+          <Text y={4} x={generateUnitIconX + xGap} fontSize={24} text="PICK" />
         </Group>
       </>
     );
@@ -223,10 +229,85 @@ const Status = ({ y }: StatusProps) => {
     power,
     speed,
     reload,
+    handleMouseEnter,
+    handleMouseLeave,
     generateUnit,
     icons,
-    showTooltip,
-    hideTooltip,
+  ]);
+
+  const unitInforCoponents = useMemo(() => {
+    if (!selectedUnit) return <></>;
+
+    const [startX, startY] = [WIDTH / 2 + 16, y + 16];
+    const yGap = 32;
+
+    const infoList = [
+      { text: `NAME: ${selectedUnit.name}` },
+      { text: `DESC: ${selectedUnit.desc}` },
+      { text: `DAMAGE: ${selectedUnit.damage}` },
+      { text: `SPEED: ${selectedUnit.speed}` },
+      { text: `RELOAD: ${selectedUnit.reload}` },
+    ];
+
+    const nextUnitY = yGap * infoList.length + 8;
+    const neededUnitXGap = 48;
+
+    return (
+      <Group x={startX} y={startY}>
+        {infoList.map((info, infoIdx) => (
+          <Text
+            key={info.text}
+            text={info.text.toUpperCase()}
+            y={yGap * infoIdx}
+            fontSize={24}
+          />
+        ))}
+        {selectedUnit.nextUnits.map((nextUnit) => (
+          <Group
+            key={nextUnit.unitName}
+            y={nextUnitY}
+            onMouseEnter={handleMouseEnter(
+              `Upgrade Unit (${nextUnit.unitName.toUpperCase()})`
+            )}
+            onMouseLeave={handleMouseLeave}
+            onClick={() => upgradeUnit(nextUnit)}
+          >
+            <UnitPreview unitName={nextUnit.unitName} />
+            <Text text="=" x={38} fontSize={32} />
+            {nextUnit.neededUnits.map((neededUnit, neededUnitIdx) => (
+              <UnitPreview
+                key={neededUnitIdx}
+                unitName={neededUnit}
+                x={60 + neededUnitIdx * neededUnitXGap}
+              />
+            ))}
+          </Group>
+        ))}
+        <Group
+          onMouseEnter={handleMouseEnter(
+            `Sell this unit for ${selectedUnit.returnCost}.`
+          )}
+          onMouseLeave={handleMouseLeave}
+          x={WIDTH / 2 - 100}
+          onClick={sellSelectedUnit}
+        >
+          <Image
+            image={icons.delete}
+            y={-8}
+            width={ICON_TILE_SIZE * 2}
+            height={ICON_TILE_SIZE * 2}
+          />
+          <Text x={32} fontSize={24} text="SELL" />
+        </Group>
+      </Group>
+    );
+  }, [
+    handleMouseEnter,
+    handleMouseLeave,
+    icons.delete,
+    selectedUnit,
+    sellSelectedUnit,
+    y,
   ]);
 
   useEffect(() => {
@@ -258,6 +339,8 @@ const Status = ({ y }: StatusProps) => {
       />
       {/* Status */}
       {statusComponents}
+      {/* Unit Info */}
+      {unitInforCoponents}
     </Layer>
   );
 };

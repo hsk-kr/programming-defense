@@ -9,19 +9,19 @@ import {
   useRef,
   useState,
 } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { useGlobalContext } from './GlobalContext';
 import { upgradeCost } from '../const/calc';
 import { UPGRADEABLE_STATUS } from '../types/game';
-import { Unit } from '../types/unit';
-import {
+import { NextUnit, Unit } from '../types/unit';
+import units, {
   UNIT_CNT_LIMIT,
   UNIT_GENERATION_COST,
+  createNewUnit,
   getRandomFirstGradeUnit,
 } from '../const/unit';
 import { map } from '../const/map';
 
-const INCRASE_MONEY_INTERVAL = 10000;
+const INCRASE_MONEY_INTERVAL = 100;
 
 interface GameStatus {
   level: number;
@@ -41,6 +41,8 @@ interface GameContext extends GameStatus {
   selectedUnitId: string;
   setSelectedUnitId: Dispatch<SetStateAction<string>>;
   relocateSelectedUnit: (x: number, y: number) => void;
+  sellSelectedUnit: VoidFunction;
+  upgradeUnit: (nextUnit: NextUnit) => void;
 }
 
 const defaultGameStatusValue: GameStatus = {
@@ -103,7 +105,9 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
       if (!selectedUnitId) return;
 
       const selectedUnit = unitList.find((unit) => unit.id === selectedUnitId);
-      if (!selectedUnit);
+      if (!selectedUnit) {
+        return;
+      }
 
       selectedUnit.x = x;
       selectedUnit.y = y;
@@ -112,9 +116,67 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
     [selectedUnitId, unitList]
   );
 
+  const sellSelectedUnit = useCallback(() => {
+    if (!selectedUnitId) return;
+
+    const selectedUnit = unitList.find((unit) => unit.id === selectedUnitId);
+    if (!selectedUnit) {
+      return;
+    }
+
+    setUnitList((prevUnitList) =>
+      prevUnitList.filter((unit) => unit.id !== selectedUnitId)
+    );
+    setGameStatus((prevGameStatus) => ({
+      ...prevGameStatus,
+      money: prevGameStatus.money + selectedUnit.returnCost,
+    }));
+    setSelectedUnitId(undefined);
+  }, [selectedUnitId, unitList]);
+
+  const upgradeUnit = useCallback(
+    (nextUnit: NextUnit) => {
+      const newUnit = createNewUnit({
+        unit: units[nextUnit.unitName],
+        map,
+        unitList,
+      });
+      if (!newUnit) {
+        console.error('next unit not found');
+        return;
+      }
+
+      const neededUnits = [...nextUnit.neededUnits];
+      const unitsWillUse = [];
+
+      for (const unit of unitList) {
+        const index = neededUnits.indexOf(unit.name);
+        if (index !== -1) {
+          unitsWillUse.push(unit.id);
+          neededUnits.splice(index, 1);
+        }
+
+        if (neededUnits.length === 0) break;
+      }
+
+      if (neededUnits.length > 0) {
+        showGameMessage('Need More Units');
+        return;
+      }
+
+      const newUnitList = unitList
+        .filter((unit) => !unitsWillUse.includes(unit.id))
+        .concat(newUnit);
+
+      setUnitList(newUnitList);
+      setSelectedUnitId(undefined);
+    },
+    [showGameMessage, unitList]
+  );
+
   const generateUnit = useCallback(() => {
     if (gameStatus.money < UNIT_GENERATION_COST) {
-      showGameMessage('Not enough money');
+      showGameMessage('Not Enough Money');
       return;
     } else if (unitList.length > UNIT_CNT_LIMIT) {
       showGameMessage(`You cannot generate units more than ${UNIT_CNT_LIMIT}.`);
@@ -127,20 +189,14 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
     }));
 
     setUnitList((prevUnitList) => {
-      for (let y = 0; y < map.length; y++) {
-        for (let x = 0; x < map[y].length; x++) {
-          if (
-            map[y][x] === 0 &&
-            prevUnitList.filter((unit) => unit.x === x && unit.y === y)
-              .length === 0
-          ) {
-            const randomUnit = getRandomFirstGradeUnit();
-            return prevUnitList.concat({ ...randomUnit, x, y, id: uuidv4() });
-          }
-        }
-      }
+      const randomUnit = getRandomFirstGradeUnit();
+      const newUnit = createNewUnit({
+        unit: randomUnit,
+        map,
+        unitList: prevUnitList,
+      });
 
-      return prevUnitList;
+      return newUnit ? prevUnitList.concat(newUnit) : prevUnitList;
     });
   }, [gameStatus.money, showGameMessage, unitList.length]);
 
@@ -163,6 +219,8 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
     selectedUnitId,
     setSelectedUnitId,
     relocateSelectedUnit,
+    sellSelectedUnit,
+    upgradeUnit,
   };
 
   return <gameContext.Provider value={value}>{children}</gameContext.Provider>;

@@ -1,18 +1,21 @@
 export type AttackType = 'basic';
 
-export type UnitName = 'html' | 'css' | 'javascript';
+export type UnitName = 'html' | 'css' | 'javascript' | 'typescript';
+
+export interface NextUnit {
+  unitName: UnitName;
+  neededUnits: UnitName[];
+}
 
 export type UnitInfo = {
   name: UnitName;
   desc: string;
   grade: number;
-  power: number;
   attackType: AttackType;
+  damage: number;
   speed: number;
-  nextUnits: {
-    unitName: UnitName;
-    neededUnits: UnitName[];
-  }[];
+  reload: number;
+  nextUnits: NextUnit[];
   returnCost: number;
 };
 

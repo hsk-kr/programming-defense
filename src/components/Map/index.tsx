@@ -1,6 +1,6 @@
 import { ComponentProps, useEffect, useRef, useState } from 'react';
 import { Layer, Image, Rect } from 'react-konva';
-import { TILE_SIZE } from '../../const/map';
+import { TILE_SIZE, movable } from '../../const/map';
 import MapTileset from '../../assets/map/map-tileset.png';
 import { useGameContext } from '../../context/GameContext';
 
@@ -26,10 +26,7 @@ const Map = ({ map }: MapProps) => {
   const handleImageMouseOver =
     ({ x, y }: { x: number; y: number }) =>
     () => {
-      const road = 2;
-      const wall = 3;
-      const tileType = map[y][x];
-      const towerAvailable = tileType !== road && tileType !== wall;
+      const towerAvailable = movable(map[y][x]);
 
       setCursorInfo({
         color: towerAvailable ? 'green' : 'red',
@@ -39,6 +36,7 @@ const Map = ({ map }: MapProps) => {
     };
 
   const handleTileClick = (x: number, y: number) => () => {
+    if (!movable(map[y][x])) return;
     relocateSelectedUnit(x, y);
   };
 

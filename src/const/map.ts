@@ -23,5 +23,6 @@ const map = [
 
 const TILE_SIZE = 32;
 
+const movable = (tile: number) => tile === 0 || tile === 1;
 
-export { map, TILE_SIZE };
+export { map, TILE_SIZE,movable };
