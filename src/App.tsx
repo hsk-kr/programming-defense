@@ -1,14 +1,14 @@
 import GameScene from './components/GameScene';
 import { GameContextProvider } from './context/GameContext';
-import { TooltipContextProvider } from './context/TooltipContext';
+import { GlobalContextProvider } from './context/GlobalContext';
 
 const App = () => {
   return (
-    <TooltipContextProvider>
+    <GlobalContextProvider>
       <GameContextProvider>
         <GameScene />
       </GameContextProvider>
-    </TooltipContextProvider>
+    </GlobalContextProvider>
   );
 };
 

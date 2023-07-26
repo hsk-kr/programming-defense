@@ -2,8 +2,9 @@ import { ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
 import { Layer, Image, Rect, Text as ReactKonvaText, Group } from 'react-konva';
 import UISet from '../../assets/ui/ui-set.png';
 import { useGameContext } from '../../context/GameContext';
-import { useTooltipContext } from '../../context/TooltipContext';
+import { useGlobalContext } from '../../context/GlobalContext';
 import { KonvaEventObject } from 'konva/lib/Node';
+import { upgradeCost } from '../../const/calc';
 
 const WIDTH = 960;
 const HEIGHT = 320;
@@ -38,7 +39,7 @@ const Text = (props: ComponentProps<typeof ReactKonvaText>) => (
 const Status = ({ y }: StatusProps) => {
   const [imageForInit, setImageForInit] = useState<HTMLImageElement>();
   const [icons, setIcons] = useState<Icons>({});
-  const { hideTooltip, showTooltip } = useTooltipContext();
+  const { hideTooltip, showTooltip } = useGlobalContext();
   const imageForInitRef: ComponentProps<typeof Image>['ref'] = useRef(null);
   const {
     level,
@@ -49,6 +50,7 @@ const Status = ({ y }: StatusProps) => {
     reload,
     moneyLevel,
     startIncreaseMoney,
+    upgradeStatus,
   } = useGameContext();
 
   useEffect(() => {
@@ -101,40 +103,65 @@ const Status = ({ y }: StatusProps) => {
     const statusList: {
       icon: keyof Icons;
       label: string;
+      tooltip: string;
+      clickEvent?: VoidFunction;
     }[] = [
       {
         label: `Level: ${level}`,
         icon: 'human',
+        tooltip: `Stage`,
       },
       {
         label: `Life: ${life}`,
         icon: 'heart',
+        tooltip: `If it reaches 0, the game will be over.`,
       },
       {
         label: `Money: ${money} (+${moneyLevel})`,
         icon: 'coin',
+        tooltip: `You can increase it by 1 by paying ${upgradeCost(
+          'moneyLevel',
+          moneyLevel
+        )}. If you want to upgrade, click on it.`,
+        clickEvent: upgradeStatus('moneyLevel'),
       },
       {
-        label: `Power: ${100 + power}% (${power}%)`,
+        label: `Power: ${100 + power}% (+${power}%)`,
         icon: 'redBook',
+        tooltip: `You can increase it by 1% by paying ${upgradeCost(
+          'power',
+          power
+        )}. If you want to upgrade, click on it.`,
+        clickEvent: upgradeStatus('power'),
       },
       {
-        label: `Speed: ${100 + speed}% (${speed}%)`,
+        label: `Speed: ${100 + speed}% (+${speed}%)`,
         icon: 'blueBook',
+        tooltip: `You can increase it by 1% by paying ${upgradeCost(
+          'speed',
+          speed
+        )}. If you want to upgrade, click on it.`,
+        clickEvent: upgradeStatus('speed'),
       },
       {
-        label: `Reload: ${100 + reload}% (${reload}%)`,
+        label: `Reload: ${100 - reload}% (-${reload}%)`,
         icon: 'brownBook',
+        tooltip: `You can decrease it by 1% by paying ${upgradeCost(
+          'reload',
+          reload
+        )}. If you want to upgrade, click on it.`,
+        clickEvent: upgradeStatus('reload'),
       },
     ];
 
-    const handleMouseEnter = (e: KonvaEventObject<MouseEvent>) => {
-      showTooltip({
-        text: 'test',
-        x: e.evt.clientX,
-        y: e.evt.clientY,
-      });
-    };
+    const handleMouseEnter =
+      (tooltip: string) => (e: KonvaEventObject<MouseEvent>) => {
+        showTooltip({
+          text: tooltip,
+          x: e.evt.clientX,
+          y: e.evt.clientY,
+        });
+      };
 
     const handleMouseLeave = () => {
       hideTooltip();
@@ -145,8 +172,9 @@ const Status = ({ y }: StatusProps) => {
         x={startX}
         y={startY + yGap * statusIdx}
         key={status.icon}
-        onMouseEnter={handleMouseEnter}
+        onMouseEnter={handleMouseEnter(status.tooltip)}
         onMouseLeave={handleMouseLeave}
+        onClick={status.clickEvent}
       >
         <Image
           image={icons[status.icon]}
@@ -162,6 +190,7 @@ const Status = ({ y }: StatusProps) => {
     life,
     money,
     moneyLevel,
+    upgradeStatus,
     power,
     speed,
     reload,

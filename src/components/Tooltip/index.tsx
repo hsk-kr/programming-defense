@@ -21,17 +21,15 @@ const TooltipContainer = styled.div<{
   z-index: 1;
   left: ${({ x }) => `${x}px`};
   top: ${({ y }) => `${y}px`};
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 `;
 
 const Tooltip = ({ visible, x, y, text }: TooltipProps) => {
   if (!visible || x === undefined || y === undefined) return <></>;
-
-  console.log({
-    visible,
-    x,
-    y,
-    text,
-  });
 
   return ReactDOM.createPortal(
     <TooltipContainer x={x} y={y}>

@@ -1,11 +1,17 @@
 import {
   ReactNode,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
 } from 'react';
+import { useGlobalContext } from './GlobalContext';
+import { upgradeCost } from '../const/calc';
+import { UPGRADEABLE_STATUS } from '../types/game';
+
+const INCRASE_MONEY_INTERVAL = 1000;
 
 interface GameStatus {
   level: number;
@@ -19,6 +25,7 @@ interface GameStatus {
 
 interface GameContext extends GameStatus {
   startIncreaseMoney: VoidFunction;
+  upgradeStatus: (type: UPGRADEABLE_STATUS) => () => void;
 }
 
 const defaultGameStatusValue: GameStatus = {
@@ -38,22 +45,41 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
   const [gameStatus, setGameStatus] = useState<GameStatus>(
     defaultGameStatusValue
   );
+  const { showGameMessage } = useGlobalContext();
   const timerIds = useRef<{
     money?: number;
   }>({});
 
-  const startIncreaseMoney = () => {
+  const startIncreaseMoney = useCallback(() => {
     if (timerIds.current.money) {
       clearInterval(timerIds.current.money);
     }
 
-    setInterval(() => {
+    timerIds.current.money = setInterval(() => {
       setGameStatus((prevGameStatus) => ({
         ...prevGameStatus,
         money: prevGameStatus.money + prevGameStatus.moneyLevel,
       }));
-    }, 1000);
-  };
+    }, INCRASE_MONEY_INTERVAL);
+  }, []);
+
+  const upgradeStatus = useCallback(
+    (type: UPGRADEABLE_STATUS) => () => {
+      const cost = upgradeCost(type, gameStatus[type]);
+
+      if (gameStatus.money < cost) {
+        showGameMessage('Not enough money');
+        return;
+      }
+
+      setGameStatus((prevGameStatus) => ({
+        ...prevGameStatus,
+        money: prevGameStatus.money - cost,
+        [type]: prevGameStatus[type] + 1,
+      }));
+    },
+    [gameStatus, showGameMessage]
+  );
 
   // Release timers
   useEffect(() => {
@@ -68,6 +94,7 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
   const value = {
     ...gameStatus,
     startIncreaseMoney,
+    upgradeStatus,
   };
 
   return <gameContext.Provider value={value}>{children}</gameContext.Provider>;
