@@ -1,7 +1,10 @@
 import { ComponentProps, useEffect, useRef, useState } from 'react';
-import { Layer, Image } from 'react-konva';
+import { Layer, Image, Rect } from 'react-konva';
 import { TILE_SIZE } from '../../const/map';
 import MapTileset from '../../assets/map/map-tileset.png';
+
+// To fill between tiles.
+const NOISE_PADDING = 2;
 
 interface MapProps {
   map: number[][];
@@ -9,31 +12,46 @@ interface MapProps {
 
 const Map = ({ map }: MapProps) => {
   const [tileImgList, setTileImgList] = useState<HTMLImageElement[]>([]);
-  const [image, setImage] = useState<HTMLImageElement>();
-  const imageRef: ComponentProps<typeof Image>['ref'] = useRef(null);
+  const [cursorInfo, setCursorInfo] = useState<{
+    color: 'red' | 'green';
+    x: number;
+    y: number;
+  }>(undefined);
+  const [imageForInit, setImageForInit] = useState<HTMLImageElement>();
+  const imageForInitRef: ComponentProps<typeof Image>['ref'] = useRef(null);
   const tileImgLoaded = tileImgList.length > 0;
+
+  const handleImageMouseOver =
+    ({ x, y }: { x: number; y: number }) =>
+    () => {
+      const towerAvailable = 1;
+      const tileType = map[y][x];
+
+      setCursorInfo({
+        color: tileType === towerAvailable ? 'green' : 'red',
+        x,
+        y,
+      });
+    };
 
   useEffect(() => {
     const mapImage = new window.Image();
     mapImage.src = MapTileset;
 
     mapImage.addEventListener('load', async () => {
-      imageRef.current.width(TILE_SIZE);
-      imageRef.current.height(TILE_SIZE);
+      imageForInitRef.current.width(TILE_SIZE);
+      imageForInitRef.current.height(TILE_SIZE);
       const newTileImgList: HTMLImageElement[] = [];
 
       const loadPartOfMap = (index: number) => {
         return new Promise<void>((resolve) => {
-          if (index === 3) {
-            console.log(index, index * TILE_SIZE);
-          }
-          imageRef.current.crop({
+          imageForInitRef.current.crop({
             x: index * TILE_SIZE,
             y: 64,
             width: TILE_SIZE,
             height: TILE_SIZE,
           });
-          imageRef.current.toImage({
+          imageForInitRef.current.toImage({
             callback: (img) => {
               newTileImgList.push(img);
               resolve();
@@ -47,16 +65,16 @@ const Map = ({ map }: MapProps) => {
         await loadPartOfMap(i);
       }
 
-      imageRef.current.visible(false);
+      imageForInitRef.current.visible(false);
       setTileImgList(newTileImgList);
     });
 
-    setImage(mapImage);
+    setImageForInit(mapImage);
   }, []);
 
   return (
     <Layer>
-      <Image image={image} ref={imageRef} visible={true} />
+      <Image image={imageForInit} ref={imageForInitRef} />
       {tileImgLoaded &&
         map.map((tileList, tileListIdx) => {
           return tileList.map((tile, tileIdx) => (
@@ -64,10 +82,26 @@ const Map = ({ map }: MapProps) => {
               key={`${tileListIdx}-${tileIdx}`}
               x={TILE_SIZE * tileIdx}
               y={TILE_SIZE * tileListIdx}
+              width={TILE_SIZE + NOISE_PADDING}
+              height={TILE_SIZE + NOISE_PADDING}
               image={tileImgList[tile]}
+              onMouseEnter={handleImageMouseOver({
+                y: tileListIdx,
+                x: tileIdx,
+              })}
             />
           ));
         })}
+      {cursorInfo && (
+        <Rect
+          x={TILE_SIZE * cursorInfo.x}
+          y={TILE_SIZE * cursorInfo.y}
+          width={TILE_SIZE}
+          height={TILE_SIZE}
+          fill={cursorInfo.color}
+          opacity={0.4}
+        />
+      )}
     </Layer>
   );
 };
