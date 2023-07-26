@@ -192,6 +192,7 @@ const Status = ({ y }: StatusProps) => {
             onMouseEnter={handleMouseEnter(status.tooltip)}
             onMouseLeave={handleMouseLeave}
             onClick={status.clickEvent}
+            onTouchStart={status.clickEvent}
           >
             <Image
               image={icons[status.icon]}
@@ -207,6 +208,7 @@ const Status = ({ y }: StatusProps) => {
           )}
           onMouseLeave={handleMouseLeave}
           onClick={generateUnit}
+          onTouchStart={generateUnit}
           y={startY}
         >
           <Image
@@ -271,6 +273,7 @@ const Status = ({ y }: StatusProps) => {
             )}
             onMouseLeave={handleMouseLeave}
             onClick={() => upgradeUnit(nextUnit)}
+            onTouchStart={() => upgradeUnit(nextUnit)}
           >
             <UnitPreview unitName={nextUnit.unitName} />
             <Text text="=" x={38} fontSize={32} />
@@ -290,6 +293,7 @@ const Status = ({ y }: StatusProps) => {
           onMouseLeave={handleMouseLeave}
           x={WIDTH / 2 - 100}
           onClick={sellSelectedUnit}
+          onTouchStart={sellSelectedUnit}
         >
           <Image
             image={icons.delete}
@@ -307,6 +311,7 @@ const Status = ({ y }: StatusProps) => {
     icons.delete,
     selectedUnit,
     sellSelectedUnit,
+    upgradeUnit,
     y,
   ]);
 

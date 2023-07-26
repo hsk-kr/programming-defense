@@ -95,6 +95,10 @@ const Map = ({ map }: MapProps) => {
                 y: tileListIdx,
                 x: tileIdx,
               })}
+              onTouchStart={handleImageMouseOver({
+                y: tileListIdx,
+                x: tileIdx,
+              })}
             />
           ));
         })}
@@ -107,6 +111,8 @@ const Map = ({ map }: MapProps) => {
           fill={cursorInfo.color}
           opacity={0.4}
           onClick={handleTileClick(cursorInfo.x, cursorInfo.y)}
+          // Not working with onTouchStart
+          onTouchEnd={handleTileClick(cursorInfo.x, cursorInfo.y)}
         />
       )}
     </Layer>

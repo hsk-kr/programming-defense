@@ -37,6 +37,7 @@ const Unit = ({ id, unitName, x, y }: UnitProps) => {
         width={TILE_SIZE}
         height={TILE_SIZE}
         onClick={handleSelect}
+        onTouchStart={handleSelect}
       />
       {selectedUnitId === id && (
         <Rect
