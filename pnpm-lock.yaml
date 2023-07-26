@@ -20,6 +20,9 @@ dependencies:
   styled-components:
     specifier: ^6.0.5
     version: 6.0.5(react-dom@18.2.0)(react@18.2.0)
+  uuid:
+    specifier: ^9.0.0
+    version: 9.0.0
 
 devDependencies:
   '@types/react':
@@ -28,6 +31,9 @@ devDependencies:
   '@types/react-dom':
     specifier: ^18.2.7
     version: 18.2.7
+  '@types/uuid':
+    specifier: ^9.0.2
+    version: 9.0.2
   '@typescript-eslint/eslint-plugin':
     specifier: ^6.0.0
     version: 6.2.0(@typescript-eslint/parser@6.2.0)(eslint@8.45.0)(typescript@5.1.6)
@@ -1878,6 +1884,10 @@ packages:
     resolution: {integrity: sha512-n4sx2bqL0mW1tvDf/loQ+aMX7GQD3lc3fkCMC55VFNDu/vBOabO+LTIeXKM14xK0ppk5TUGcWRjiSpIlUpghKw==}
     dev: false
 
+  /@types/uuid@9.0.2:
+    resolution: {integrity: sha512-kNnC1GFBLuhImSnV7w4njQkUiJi0ZXUycu1rUaouPqiKlXkh77JKgdRnTAp1x5eBwcIwbtI+3otwzuIDEuDoxQ==}
+    dev: true
+
   /@typescript-eslint/eslint-plugin@6.2.0(@typescript-eslint/parser@6.2.0)(eslint@8.45.0)(typescript@5.1.6):
     resolution: {integrity: sha512-rClGrMuyS/3j0ETa1Ui7s6GkLhfZGKZL3ZrChLeAiACBE/tRc1wq8SNZESUuluxhLj9FkUefRs2l6bCIArWBiQ==}
     engines: {node: ^16.0.0 || >=18.0.0}
@@ -3248,6 +3258,11 @@ packages:
     dependencies:
       punycode: 2.3.0
     dev: true
+
+  /uuid@9.0.0:
+    resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}
+    hasBin: true
+    dev: false
 
   /vite@4.4.7:
     resolution: {integrity: sha512-6pYf9QJ1mHylfVh39HpuSfMPojPSKVxZvnclX1K1FyZ1PXDOcLBibdq5t1qxJSnL63ca8Wf4zts6mD8u8oc9Fw==}

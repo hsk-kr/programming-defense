@@ -4,6 +4,7 @@ import { Stage } from 'react-konva';
 import Map from '../../components/Map';
 import { map } from '../../const/map';
 import Status from '../Status';
+import UnitRenderer from '../UnitRenderer';
 
 const SCREEN_WIDTH = 960;
 const SCREEN_HEIGHT = 960;
@@ -35,6 +36,7 @@ const GameScene = () => {
       >
         <Map map={map} />
         <Status y={640} />
+        <UnitRenderer />
       </Stage>
     </GameSceneContainer>
   );

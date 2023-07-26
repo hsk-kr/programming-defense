@@ -5,6 +5,7 @@ import { useGameContext } from '../../context/GameContext';
 import { useGlobalContext } from '../../context/GlobalContext';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { upgradeCost } from '../../const/calc';
+import { UNIT_CNT_LIMIT, UNIT_GENERATION_COST } from '../../const/unit';
 
 const WIDTH = 960;
 const HEIGHT = 320;
@@ -51,6 +52,7 @@ const Status = ({ y }: StatusProps) => {
     moneyLevel,
     startIncreaseMoney,
     upgradeStatus,
+    generateUnit,
   } = useGameContext();
 
   useEffect(() => {
@@ -167,23 +169,50 @@ const Status = ({ y }: StatusProps) => {
       hideTooltip();
     };
 
-    return statusList.map((status, statusIdx) => (
-      <Group
-        x={startX}
-        y={startY + yGap * statusIdx}
-        key={status.icon}
-        onMouseEnter={handleMouseEnter(status.tooltip)}
-        onMouseLeave={handleMouseLeave}
-        onClick={status.clickEvent}
-      >
-        <Image
-          image={icons[status.icon]}
-          width={ICON_TILE_SIZE * 2}
-          height={ICON_TILE_SIZE * 2}
-        />
-        <Text y={6} x={xGap} fontSize={24} text={status.label} />
-      </Group>
-    ));
+    const generateUnitIconX = WIDTH / 2 - ICON_TILE_SIZE * 2 - 80;
+
+    return (
+      <>
+        {statusList.map((status, statusIdx) => (
+          <Group
+            x={startX}
+            y={startY + yGap * statusIdx}
+            key={status.icon}
+            onMouseEnter={handleMouseEnter(status.tooltip)}
+            onMouseLeave={handleMouseLeave}
+            onClick={status.clickEvent}
+          >
+            <Image
+              image={icons[status.icon]}
+              width={ICON_TILE_SIZE * 2}
+              height={ICON_TILE_SIZE * 2}
+            />
+            <Text y={6} x={xGap} fontSize={24} text={status.label} />
+          </Group>
+        ))}
+        <Group
+          onMouseEnter={handleMouseEnter(
+            `Generate a random unit by paying ${UNIT_GENERATION_COST}. You cannot generate units more than ${UNIT_CNT_LIMIT}.`
+          )}
+          onMouseLeave={handleMouseLeave}
+          onClick={generateUnit}
+        >
+          <Image
+            image={icons.mob}
+            x={generateUnitIconX}
+            y={startY}
+            width={ICON_TILE_SIZE * 2}
+            height={ICON_TILE_SIZE * 2}
+          />
+          <Text
+            y={startY + 4}
+            x={generateUnitIconX + xGap}
+            fontSize={24}
+            text="PICK"
+          />
+        </Group>
+      </>
+    );
   }, [
     y,
     level,
@@ -194,9 +223,10 @@ const Status = ({ y }: StatusProps) => {
     power,
     speed,
     reload,
+    generateUnit,
+    icons,
     showTooltip,
     hideTooltip,
-    icons,
   ]);
 
   useEffect(() => {

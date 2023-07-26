@@ -2,6 +2,7 @@ import { ComponentProps, useEffect, useRef, useState } from 'react';
 import { Layer, Image, Rect } from 'react-konva';
 import { TILE_SIZE } from '../../const/map';
 import MapTileset from '../../assets/map/map-tileset.png';
+import { useGameContext } from '../../context/GameContext';
 
 // To fill between tiles.
 const NOISE_PADDING = 2;
@@ -19,20 +20,27 @@ const Map = ({ map }: MapProps) => {
   }>(undefined);
   const [imageForInit, setImageForInit] = useState<HTMLImageElement>();
   const imageForInitRef: ComponentProps<typeof Image>['ref'] = useRef(null);
+  const { relocateSelectedUnit } = useGameContext();
   const tileImgLoaded = tileImgList.length > 0;
 
   const handleImageMouseOver =
     ({ x, y }: { x: number; y: number }) =>
     () => {
-      const towerAvailable = 1;
+      const road = 2;
+      const wall = 3;
       const tileType = map[y][x];
+      const towerAvailable = tileType !== road && tileType !== wall;
 
       setCursorInfo({
-        color: tileType === towerAvailable ? 'green' : 'red',
+        color: towerAvailable ? 'green' : 'red',
         x,
         y,
       });
     };
+
+  const handleTileClick = (x: number, y: number) => () => {
+    relocateSelectedUnit(x, y);
+  };
 
   useEffect(() => {
     const mapImage = new window.Image();
@@ -100,6 +108,7 @@ const Map = ({ map }: MapProps) => {
           height={TILE_SIZE}
           fill={cursorInfo.color}
           opacity={0.4}
+          onClick={handleTileClick(cursorInfo.x, cursorInfo.y)}
         />
       )}
     </Layer>
