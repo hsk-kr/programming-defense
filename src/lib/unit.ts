@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import units from '../const/unit';
 import { Unit, UnitInfo, UnitName } from '../types/unit';
 
-const getRandomFirstGradeUnit = () => {
+const getRandomFirstGradeUnit = (): Unit => {
   const firstGradeUnits: Unit[] = [];
 
   for (const unitName of Object.keys(units)) {
@@ -24,7 +24,7 @@ const createNewUnit = ({
   unit: UnitInfo;
   map: number[][];
   unitList: Unit[];
-}) => {
+}): Unit | undefined => {
   for (let y = 0; y < map.length; y++) {
     for (let x = 0; x < map[y].length; x++) {
       if (

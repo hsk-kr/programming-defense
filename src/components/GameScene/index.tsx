@@ -5,9 +5,8 @@ import Map from '../../components/Map';
 import { map } from '../../const/map';
 import Status from '../Status';
 import UnitRenderer from '../UnitRenderer';
-
-const SCREEN_WIDTH = 960;
-const SCREEN_HEIGHT = 960;
+import MobRenderer from '../MobRenderer';
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../const/game';
 
 const GameSceneContainer = styled.div`
   overflow: hidden;
@@ -37,6 +36,7 @@ const GameScene = () => {
         <Map map={map} />
         <Status y={640} />
         <UnitRenderer />
+        <MobRenderer />
       </Stage>
     </GameSceneContainer>
   );
