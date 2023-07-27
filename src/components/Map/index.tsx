@@ -1,6 +1,7 @@
 import { ComponentProps, useEffect, useRef, useState } from 'react';
 import { Layer, Image, Rect } from 'react-konva';
-import { TILE_SIZE, movable } from '../../const/map';
+import { TILE_SIZE } from '../../const/map';
+import { movable } from '../../lib/map';
 import MapTileset from '../../assets/map/map-tileset.png';
 import { useGameContext } from '../../context/GameContext';
 

@@ -10,15 +10,11 @@ import {
   useState,
 } from 'react';
 import { useGlobalContext } from './GlobalContext';
-import { upgradeCost } from '../const/calc';
+import { upgradeCost } from '../lib/calc';
 import { UPGRADEABLE_STATUS } from '../types/game';
 import { NextUnit, Unit } from '../types/unit';
-import units, {
-  UNIT_CNT_LIMIT,
-  UNIT_GENERATION_COST,
-  createNewUnit,
-  getRandomFirstGradeUnit,
-} from '../const/unit';
+import units, { UNIT_CNT_LIMIT, UNIT_GENERATION_COST } from '../const/unit';
+import { createNewUnit, getRandomFirstGradeUnit } from '../lib/unit';
 import { map } from '../const/map';
 
 const INCRASE_MONEY_INTERVAL = 100;

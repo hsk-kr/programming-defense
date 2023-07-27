@@ -11,7 +11,7 @@ import UISet from '../../assets/ui/ui-set.png';
 import { useGameContext } from '../../context/GameContext';
 import { useGlobalContext } from '../../context/GlobalContext';
 import { KonvaEventObject } from 'konva/lib/Node';
-import { upgradeCost } from '../../const/calc';
+import { upgradeCost } from '../../lib/calc';
 import { UNIT_CNT_LIMIT, UNIT_GENERATION_COST } from '../../const/unit';
 import UnitPreview from '../UnitPreview';
 

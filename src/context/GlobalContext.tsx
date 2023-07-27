@@ -59,6 +59,20 @@ export const GlobalContextProvider = ({
     }, 3000);
   }, []);
 
+  // Hide Tooltip when mouse up is fired
+  useEffect(() => {
+    const handleMouseUp = () => {
+      hideTooltip();
+    };
+
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Release timers
   useEffect(() => {
     return () => {
