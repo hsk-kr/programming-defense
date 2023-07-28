@@ -12,20 +12,39 @@ import {
 import { useGlobalContext } from './GlobalContext';
 import { upgradeCost } from '../lib/calc';
 import { UPGRADEABLE_STATUS } from '../types/game';
-import { NextUnit, Unit } from '../types/unit';
-import units, { UNIT_CNT_LIMIT, UNIT_GENERATION_COST } from '../const/unit';
-import { createNewUnit, getRandomFirstGradeUnit } from '../lib/unit';
-import { map } from '../const/map';
+import { Bullet, NextUnit, Unit } from '../types/unit';
+import units, {
+  BULLET_INTERVAL,
+  BULLET_SIZE,
+  BULLET_SPEED_FASTEST,
+  UNIT_CNT_LIMIT,
+  UNIT_GENERATION_COST,
+} from '../const/unit';
+import {
+  createNewBullet,
+  createNewUnit,
+  getRandomFirstGradeUnit,
+} from '../lib/unit';
+import { SHOOTABLE_POSITION, map } from '../const/map';
 
 // resources
 import MobSpriteImg from '../assets/mob/mob.png';
 import { Mob } from '../types/mob';
 import stages, { EACH_STATE_TIME } from '../const/stage';
 import { createMob } from '../lib/mobs';
-import { MOB_ONE_STEP_DISTANCE, MOB_SIZE } from '../const/mob';
-import { SCREEN_WIDTH } from '../const/game';
-
-const INCRASE_MONEY_INTERVAL = 100;
+import {
+  MOB_MOVEMENT_INTERVAL,
+  MOB_ONE_STEP_DISTANCE,
+  MOB_SIZE,
+  MOB_SPEED_FASTEST,
+} from '../const/mob';
+import {
+  GAME_SCREEN_HEIGHT,
+  GAME_SCREEN_WIDTH,
+  INCRASE_MONEY_INTERVAL,
+  MONEY_WHNE_KILL_MOB,
+  SCREEN_WIDTH,
+} from '../const/game';
 
 interface GameStatus {
   level: number;
@@ -46,6 +65,7 @@ interface IStatus {
 
 interface IUnit {
   unitList: Unit[];
+  bulletList: Bullet[];
   selectedUnitId: string;
   setSelectedUnitId: Dispatch<SetStateAction<string>>;
   relocateSelectedUnit: (x: number, y: number) => void;
@@ -81,14 +101,17 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
   const [selectedUnitId, setSelectedUnitId] = useState<string>();
   const [time, setTime] = useState<number>(EACH_STATE_TIME);
   const [unitList, setUnitList] = useState<Unit[]>([]);
+  const [bulletList, setBulletList] = useState<Bullet[]>([]);
   const [mobList, setMobList] = useState<Mob[]>([]);
   const [mobSpriteImage, setMobSpriteImage] = useState<HTMLImageElement>();
   const { showGameMessage } = useGlobalContext();
+  const mobListRef = useRef<Mob[]>(); // To use in useEffect without dependencies, it's updated when mobs move
   const timerIds = useRef<{
     money?: number;
     timer?: number;
     mob?: number;
     mobMove?: number;
+    bullet?: number;
   }>({});
 
   const startIncreaseMoney = useCallback(() => {
@@ -254,6 +277,7 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
     mobImg.src = MobSpriteImg;
   }, []);
 
+  // Timer leveling up
   useEffect(() => {
     let stageUp = false;
     let gameEnd = false;
@@ -351,10 +375,10 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
 
       setMobList((prevMobList) => {
         const newMobList = prevMobList.map((mob) => {
-          mob.speedInterval++;
+          mob.speedInterval--;
 
-          if (mob.speed === mob.speedInterval) {
-            mob.speedInterval = 0;
+          if (mob.speedInterval <= 0) {
+            mob.speedInterval = MOB_SPEED_FASTEST - mob.speed;
             mob.x += MOB_ONE_STEP_DISTANCE;
           }
 
@@ -367,9 +391,10 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
 
         mobCntOverLine = newMobList.length - aliveMobList.length;
 
+        mobListRef.current = aliveMobList; // For bullet useEffect
         return aliveMobList;
       });
-    }, 100);
+    }, MOB_MOVEMENT_INTERVAL);
 
     return () => {
       if (timerIds.current.mobMove) {
@@ -379,9 +404,154 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [gameStatus.level]);
 
+  // Generate bullets
+  useEffect(() => {
+    let bulletsReadyToShoot: Bullet[] = [];
+    let mobIdAndBulletGetShot: Record<string, Bullet> = {};
+    let killedMobCnt = 0;
+
+    timerIds.current.bullet = setInterval(() => {
+      // Generate bullets
+      setGameStatus((prevGameStatus) => {
+        setUnitList((prevUnitList) => {
+          for (const unit of prevUnitList) {
+            if (map[unit.y][unit.x] !== SHOOTABLE_POSITION) continue;
+
+            unit.reloadInterval++;
+            if (
+              unit.reloadInterval <
+              unit.reload / (1 + prevGameStatus.reload / 100)
+            ) {
+              continue;
+            }
+            const mobsInOrderClose = mobListRef.current
+              .map((mob) => {
+                return {
+                  x: mob.x,
+                  y: mob.y,
+                  weight: Math.abs(mob.x - unit.x),
+                };
+              })
+              .sort((a, b) => b.weight - a.weight);
+            if (mobsInOrderClose.length === 0) continue;
+
+            const newBullet = createNewBullet({
+              unit,
+              mobPos: {
+                x: mobsInOrderClose[0].x,
+                y: mobsInOrderClose[0].y,
+              },
+              power: prevGameStatus.power,
+              speed: prevGameStatus.speed,
+            });
+            bulletsReadyToShoot.push(newBullet);
+            unit.reloadInterval = 0;
+          }
+
+          return prevUnitList;
+        });
+
+        return prevGameStatus;
+      });
+
+      // Add bullets
+      setBulletList((bulletList) => {
+        if (bulletsReadyToShoot.length === 0) return bulletList;
+
+        const newBulletList = bulletList.concat(...bulletsReadyToShoot);
+        bulletsReadyToShoot = [];
+        return newBulletList;
+      });
+
+      // Move and delete bullets
+      setBulletList((bulletList) => {
+        const newBulletList = [];
+
+        for (const bullet of bulletList) {
+          bullet.speedInterval -= 1;
+          if (bullet.speedInterval < 0) {
+            bullet.x += bullet.forceX;
+            bullet.y += bullet.forceY;
+            bullet.speedInterval = BULLET_SPEED_FASTEST - bullet.speed;
+          }
+
+          // since bullet is rendered from the center, the calcaulation of the position is different from images.
+          const collideMobs = mobListRef.current.filter(
+            (mob) =>
+              !(
+                mob.x > bullet.x + BULLET_SIZE / 2 ||
+                mob.x + MOB_SIZE < bullet.x ||
+                mob.y > bullet.y + BULLET_SIZE / 2 ||
+                mob.y + MOB_SIZE < bullet.y
+              )
+          );
+
+          if (collideMobs.length === 0) {
+            // If a bullet is inside the screen
+
+            if (
+              !(
+                BULLET_SIZE + bullet.y >= GAME_SCREEN_HEIGHT ||
+                BULLET_SIZE + bullet.x >= GAME_SCREEN_WIDTH
+              )
+            ) {
+              newBulletList.push(bullet);
+            }
+            continue;
+          }
+
+          mobIdAndBulletGetShot[collideMobs[0].id] = bullet;
+        }
+
+        return newBulletList;
+      });
+
+      // Make damage and kill mobs
+      setMobList((prevMobList) => {
+        const mobIds = Object.keys(mobIdAndBulletGetShot);
+        if (mobIds.length === 0) return prevMobList;
+
+        const newMobList = prevMobList
+          .map((mob) => {
+            if (!mobIds.includes(mob.id)) return mob;
+
+            mob.hp -= mobIdAndBulletGetShot[mob.id].damage;
+            return mob;
+          })
+          .filter((mob) => mob.hp > 0);
+
+        killedMobCnt = prevMobList.length - newMobList.length;
+        mobIdAndBulletGetShot = {};
+
+        return newMobList;
+      });
+
+      // Earn money by number of killed mobs
+      setGameStatus((prevGameStatus) => {
+        if (killedMobCnt === 0) return prevGameStatus;
+
+        const newGameStatus = {
+          ...prevGameStatus,
+          money: prevGameStatus.money + killedMobCnt * MONEY_WHNE_KILL_MOB,
+        };
+        killedMobCnt = 0;
+
+        return newGameStatus;
+      });
+    }, BULLET_INTERVAL);
+
+    return () => {
+      if (timerIds.current.bullet) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        clearInterval(timerIds.current.bullet);
+      }
+    };
+  }, []);
+
   const value = {
     ...gameStatus,
     unitList,
+    bulletList,
     startIncreaseMoney,
     upgradeStatus,
     generateUnit,

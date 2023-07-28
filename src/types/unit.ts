@@ -13,8 +13,8 @@ export type UnitInfo = {
   grade: number;
   attackType: AttackType;
   damage: number;
-  speed: number;
-  reload: number;
+  speed: number; // 100ms * speed
+  reload: number; // 100ms * speed
   nextUnits: NextUnit[];
   returnCost: number;
 };
@@ -24,4 +24,16 @@ export type Unit = UnitInfo & {
   id: string;
   x: number;
   y: number;
+  reloadInterval: number; // when it reahes the speed, the unit create a bullet
 };
+
+export interface Bullet {
+  id: string;
+  damage: number;
+  speed: number;
+  speedInterval: number; // when it reahes the speed, the bullet moves
+  x: number;
+  y: number;
+  forceX: number; // Bullet Direction
+  forceY: number; // Bullet Direction
+}

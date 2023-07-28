@@ -170,7 +170,7 @@ const Status = ({ y }: StatusProps) => {
         clickEvent: upgradeStatus('speed'),
       },
       {
-        label: `RELOAD: ${100 - reload}% (-${reload}%)`,
+        label: `RELOAD: ${100 + reload}% (+${reload}%)`,
         icon: 'brownBook',
         tooltip: `Decrease it by 1% by paying ${upgradeCost(
           'reload',

@@ -1,6 +1,6 @@
 import { MobName } from '../types/mob';
 
-const EACH_STATE_TIME = 10;
+export const EACH_STATE_TIME = 10;
 
 const stages: {
   mobs: {
@@ -89,7 +89,5 @@ const stages: {
     ],
   },
 ];
-
-export { EACH_STATE_TIME };
 
 export default stages;
