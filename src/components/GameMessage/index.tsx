@@ -8,7 +8,7 @@ export interface GameMessageProps {
 
 const GameMessageContainer = styled.div`
   background-color: rgba(0, 0, 0, 0.6);
-  font-size: 2vw;
+  font-size: 2vh;
   color: #fff;
   padding: 12px;
   border-radius: 8px;
