@@ -1,6 +1,22 @@
-export type AttackType = 'basic';
+// export type AttackType = 'basic';
 
-export type UnitName = 'html' | 'css' | 'javascript' | 'typescript';
+export type UnitName =
+  | 'html'
+  | 'css'
+  | 'javascript'
+  | 'typescript'
+  | 'react'
+  | 'vue'
+  | 'angular'
+  | 'svelte'
+  | 'c'
+  | 'c++'
+  | 'rust'
+  | 'java'
+  | 'c#'
+  | 'go'
+  | 'php'
+  | 'python';
 
 export interface NextUnit {
   unitName: UnitName;
@@ -11,11 +27,11 @@ export type UnitInfo = {
   name: UnitName;
   desc: string;
   grade: number;
-  attackType: AttackType;
+  // attackType: AttackType;
   damage: number;
   speed: number; // 100ms * speed
   reload: number; // 100ms * speed
-  nextUnits: NextUnit[];
+  neededUnits: UnitName[];
   returnCost: number;
 };
 
@@ -34,6 +50,7 @@ export interface Bullet {
   speedInterval: number; // when it reahes the speed, the bullet moves
   x: number;
   y: number;
+  bulletLife: number;
   forceX: number; // Bullet Direction
   forceY: number; // Bullet Direction
 }

@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import units, { BULLET_SPEED_FASTEST } from '../const/unit';
-import { Bullet, Unit, UnitInfo, UnitName } from '../types/unit';
+import units, { BULLET_LIFE, BULLET_SPEED_FASTEST } from '../const/unit';
+import { Bullet, NextUnit, Unit, UnitInfo, UnitName } from '../types/unit';
 import { TILE_SIZE } from '../const/map';
 import { MOB_SIZE } from '../const/mob';
 
@@ -13,6 +13,25 @@ const getRandomFirstGradeUnit = (): Unit => {
   }
 
   return firstGradeUnits[Math.floor(Math.random() * firstGradeUnits.length)];
+};
+
+const getNextUnits = (unitName: UnitName): NextUnit[] => {
+  const nextUnits: NextUnit[] = [];
+
+  const nextUnitNames = Object.keys(units) as UnitName[];
+
+  for (const nextUnitName of nextUnitNames) {
+    if (units[nextUnitName].neededUnits.includes(unitName)) {
+      nextUnits.push({
+        unitName: nextUnitName,
+        neededUnits: units[nextUnitName].neededUnits,
+      });
+    }
+  }
+
+  console.log(nextUnits);
+
+  return nextUnits;
 };
 
 /**
@@ -88,9 +107,15 @@ const createNewBullet = ({
     y: unitCenterY,
     forceX: enhancedForceX,
     forceY: enhancedForceY,
+    bulletLife: BULLET_LIFE,
   };
 
   return newBullet;
 };
 
-export { getRandomFirstGradeUnit, createNewUnit, createNewBullet };
+export {
+  getRandomFirstGradeUnit,
+  createNewUnit,
+  createNewBullet,
+  getNextUnits,
+};

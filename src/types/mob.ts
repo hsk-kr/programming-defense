@@ -1,3 +1,26 @@
+export type MobName =
+  // STAGE 1~10
+  | 'os'
+  | 'network'
+  | 'data_structure'
+  | 'algorithm'
+  | 'ai'
+  | 'bug'
+  // STAGE 11~20
+  | 'dev_to'
+  | 'youtube'
+  | 'stack_overflow'
+  | 'linkedin'
+  | 'indeed'
+  | 'burnout'
+  // STAGE 21~30
+  | 'coding_test'
+  | 'recruiter'
+  | 'interviewer'
+  | 'onboarding'
+  | 'team_leader'
+  | 'CEO';
+
 export interface MobInfo {
   name: string;
   imageIndex: number;
@@ -11,5 +34,3 @@ export interface Mob extends MobInfo {
   x: number;
   y: number;
 }
-
-export type MobName = 'computerScience' | 'bug';

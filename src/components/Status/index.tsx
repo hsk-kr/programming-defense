@@ -14,6 +14,8 @@ import { KonvaEventObject } from 'konva/lib/Node';
 import { upgradeCost } from '../../lib/calc';
 import { UNIT_CNT_LIMIT, UNIT_GENERATION_COST } from '../../const/unit';
 import UnitPreview from '../UnitPreview';
+import { getNextUnits } from '../../lib/unit';
+import KeyEvent from '../KeyEvent';
 
 const WIDTH = 960;
 const HEIGHT = 320;
@@ -114,6 +116,32 @@ const Status = ({ y }: StatusProps) => {
     setImageForInit(uiImage);
   }, []);
 
+  const handleKeyUp: ComponentProps<typeof KeyEvent>['onKeyUp'] = useCallback(
+    (key) => {
+      switch (key) {
+        case 'q':
+          upgradeStatus('power')();
+          break;
+        case 'w':
+          upgradeStatus('speed')();
+          break;
+        case 'e':
+          upgradeStatus('reload')();
+          break;
+        case 'm':
+          upgradeStatus('moneyLevel')();
+          break;
+        case 'p':
+          generateUnit();
+          break;
+        case 's':
+          sellSelectedUnit();
+          break;
+      }
+    },
+    [generateUnit, sellSelectedUnit, upgradeStatus]
+  );
+
   const handleMouseEnter = useCallback(
     (tooltip: string) => (e: KonvaEventObject<MouseEvent>) => {
       showTooltip({
@@ -149,7 +177,7 @@ const Status = ({ y }: StatusProps) => {
         tooltip: `If it reaches 0, the game will be over.`,
       },
       {
-        label: `MONEY: ${money} (+${moneyLevel})`,
+        label: `MONEY: ${money} (+${moneyLevel})[M]`,
         icon: 'coin',
         tooltip: `Increase it by 1 by paying ${upgradeCost(
           'moneyLevel',
@@ -158,19 +186,19 @@ const Status = ({ y }: StatusProps) => {
         clickEvent: upgradeStatus('moneyLevel'),
       },
       {
-        label: `POWER: ${100 + power}% (+${power}%)`,
+        label: `POWER: ${100 + power}% (+${power}%)[Q]`,
         icon: 'redBook',
         tooltip: `Increase it by 1% by paying ${upgradeCost('power', power)}.`,
         clickEvent: upgradeStatus('power'),
       },
       {
-        label: `SPEED: ${100 + speed}% (+${speed}%)`,
+        label: `SPEED: ${100 + speed}% (+${speed}%)[W]`,
         icon: 'blueBook',
         tooltip: `Increase it by 1% by paying ${upgradeCost('speed', speed)}.`,
         clickEvent: upgradeStatus('speed'),
       },
       {
-        label: `RELOAD: ${100 + reload}% (+${reload}%)`,
+        label: `RELOAD: ${100 + reload}% (+${reload}%)[E]`,
         icon: 'brownBook',
         tooltip: `Decrease it by 1% by paying ${upgradeCost(
           'reload',
@@ -217,7 +245,12 @@ const Status = ({ y }: StatusProps) => {
             width={ICON_TILE_SIZE * 2}
             height={ICON_TILE_SIZE * 2}
           />
-          <Text y={4} x={generateUnitIconX + xGap} fontSize={24} text="PICK" />
+          <Text
+            y={4}
+            x={generateUnitIconX + xGap}
+            fontSize={24}
+            text="PICK[P]"
+          />
         </Group>
       </>
     );
@@ -253,6 +286,7 @@ const Status = ({ y }: StatusProps) => {
 
     const nextUnitY = yGap * infoList.length + 8;
     const neededUnitXGap = 48;
+    const nextUnits = getNextUnits(selectedUnit.name);
 
     return (
       <Group x={startX} y={startY}>
@@ -264,10 +298,10 @@ const Status = ({ y }: StatusProps) => {
             fontSize={24}
           />
         ))}
-        {selectedUnit.nextUnits.map((nextUnit) => (
+        {nextUnits.map((nextUnit, nextUnitIdx) => (
           <Group
             key={nextUnit.unitName}
-            y={nextUnitY}
+            y={nextUnitY + nextUnitIdx * (yGap + 8)}
             onMouseEnter={handleMouseEnter(
               `Upgrade Unit (${nextUnit.unitName.toUpperCase()})`
             )}
@@ -288,7 +322,7 @@ const Status = ({ y }: StatusProps) => {
         ))}
         <Group
           onMouseEnter={handleMouseEnter(
-            `Sell this unit for ${selectedUnit.returnCost}.`
+            `Sell this unit for ${selectedUnit.returnCost}.[S]`
           )}
           onMouseLeave={handleMouseLeave}
           x={WIDTH / 2 - 100}
@@ -322,6 +356,7 @@ const Status = ({ y }: StatusProps) => {
 
   return (
     <Layer>
+      <KeyEvent onKeyUp={handleKeyUp} />
       {/* UI Full Image */}
       <Image image={imageForInit} ref={imageForInitRef} y={y} />
       {/* UI Frame */}

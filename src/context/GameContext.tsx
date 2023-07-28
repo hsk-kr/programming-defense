@@ -82,8 +82,8 @@ type GameContext = GameStatus & IStatus & IUnit & IMob;
 
 const defaultGameStatusValue: GameStatus = {
   level: 1,
-  life: 100,
-  money: 1,
+  life: 20,
+  money: 10,
   moneyLevel: 1,
   power: 0,
   speed: 0,
@@ -280,20 +280,13 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
   // Timer leveling up
   useEffect(() => {
     let stageUp = false;
-    let gameEnd = false;
 
     timerIds.current.timer = setInterval(() => {
-      // When the game is done, main timer stops
-      if (gameEnd) {
-        setGameEnd(true);
-        clearInterval(timerIds.current.timer);
-        return;
-      }
       if (stageUp) {
         setGameStatus((prevGameStatus) => {
           const isAllStageCleared = prevGameStatus.level > stages.length;
           if (isAllStageCleared) {
-            gameEnd = true;
+            setGameEnd(true);
             return prevGameStatus;
           }
 
@@ -314,12 +307,19 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
         return prevTime - 1;
       });
     }, 1000);
-  }, []);
+
+    return () => {
+      if (timerIds.current.timer) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        clearInterval(timerIds.current.timer);
+      }
+    };
+  }, [gameEnd]);
 
   // When level is up, zen mobs
   useEffect(() => {
     const isAllStageCleared = gameStatus.level > stages.length;
-    if (isAllStageCleared) return;
+    if (isAllStageCleared || gameEnd) return;
 
     const mobs = stages[gameStatus.level - 1].mobs;
     let index = 0;
@@ -364,7 +364,7 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
         mobCntOverLine = 0;
         setGameStatus((prevGameStatus) => {
           const life = prevGameStatus.life - valueToDecreaseLife;
-          if (life < 0) gameEnd = true;
+          if (life <= 0) gameEnd = true;
 
           return {
             ...prevGameStatus,
@@ -469,6 +469,10 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
 
         for (const bullet of bulletList) {
           bullet.speedInterval -= 1;
+
+          bullet.bulletLife -= 1;
+          if (bullet.bulletLife < 0) continue;
+
           if (bullet.speedInterval < 0) {
             bullet.x += bullet.forceX;
             bullet.y += bullet.forceY;
