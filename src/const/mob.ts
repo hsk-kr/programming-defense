@@ -1,6 +1,6 @@
 import { MobInfo, MobName } from '../types/mob';
 
-export const MOB_ONE_STEP_DISTANCE = 50;
+export const MOB_ONE_STEP_DISTANCE = 5;
 export const MOB_SIZE = 16;
 export const MOB_MOVEMENT_INTERVAL = 100;
 export const MOB_SPEED_SLOWEST = 1;
