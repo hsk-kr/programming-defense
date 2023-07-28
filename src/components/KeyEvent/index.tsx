@@ -1,10 +1,7 @@
 import { useEffect } from 'react';
 
-const keys = ['q', 'w', 'e', 'm', 'p', 's'] as const;
-type Keys = (typeof keys)[number];
-
 interface KeyEventProps {
-  onKeyUp?: (key: Keys) => void;
+  onKeyUp?: (key: string) => void;
 }
 
 const KeyEvent = ({ onKeyUp }: KeyEventProps) => {
@@ -12,9 +9,7 @@ const KeyEvent = ({ onKeyUp }: KeyEventProps) => {
     const handleKeyUp = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
 
-      if (keys.includes(k as Keys)) {
-        onKeyUp(k as Keys);
-      }
+      onKeyUp(k);
     };
 
     window.addEventListener('keyup', handleKeyUp);

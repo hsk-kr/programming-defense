@@ -76,9 +76,9 @@ const mobs: Record<MobName, MobInfo> = {
   },
   burnout: {
     name: 'Burnout',
-    hp: 500,
+    hp: 1000,
     imageIndex: 11,
-    speed: 3,
+    speed: 2,
   },
   coding_test: {
     name: 'Coding Test',
@@ -88,33 +88,33 @@ const mobs: Record<MobName, MobInfo> = {
   },
   recruiter: {
     name: 'Recruiter',
-    hp: 200,
+    hp: 150,
     imageIndex: 15,
     speed: 7,
   },
   interviewer: {
     name: 'Interviewer',
-    hp: 300,
+    hp: 200,
     imageIndex: 16,
     speed: 7,
   },
   onboarding: {
     name: 'Onboarding',
-    hp: 400,
+    hp: 300,
     imageIndex: 17,
     speed: 7,
   },
   team_leader: {
     name: 'Team Leader',
-    hp: 500,
+    hp: 400,
     imageIndex: 18,
     speed: 7,
   },
   CEO: {
     name: 'CEO',
-    hp: 2000,
+    hp: 5000,
     imageIndex: 12,
-    speed: 3,
+    speed: 2,
   },
 };
 

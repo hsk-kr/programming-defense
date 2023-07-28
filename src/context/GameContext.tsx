@@ -70,6 +70,7 @@ interface IUnit {
   setSelectedUnitId: Dispatch<SetStateAction<string>>;
   relocateSelectedUnit: (x: number, y: number) => void;
   sellSelectedUnit: VoidFunction;
+  sellAllBasicUnits: VoidFunction;
   upgradeUnit: (nextUnit: NextUnit) => void;
 }
 
@@ -83,7 +84,7 @@ type GameContext = GameStatus & IStatus & IUnit & IMob;
 const defaultGameStatusValue: GameStatus = {
   level: 1,
   life: 20,
-  money: 10,
+  money: 1000,
   moneyLevel: 1,
   power: 0,
   speed: 0,
@@ -178,6 +179,26 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
     }));
     setSelectedUnitId(undefined);
   }, [selectedUnitId, unitList]);
+
+  const sellAllBasicUnits = useCallback(() => {
+    const newUnitList = [];
+    let allReturnCost = 0;
+
+    for (const unit of unitList) {
+      if (unit.grade === 1) {
+        allReturnCost += unit.returnCost;
+      } else {
+        newUnitList.push(unit);
+      }
+    }
+
+    setUnitList(newUnitList);
+    setGameStatus((prevGameStatus) => ({
+      ...prevGameStatus,
+      money: prevGameStatus.money + allReturnCost,
+    }));
+    setSelectedUnitId(undefined);
+  }, [unitList]);
 
   const upgradeUnit = useCallback(
     (nextUnit: NextUnit) => {
@@ -563,6 +584,7 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
     setSelectedUnitId,
     relocateSelectedUnit,
     sellSelectedUnit,
+    sellAllBasicUnits,
     upgradeUnit,
     mobSpriteImage,
     mobList,

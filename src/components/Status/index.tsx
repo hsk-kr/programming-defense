@@ -67,6 +67,7 @@ const Status = ({ y }: StatusProps) => {
     upgradeStatus,
     generateUnit,
     sellSelectedUnit,
+    sellAllBasicUnits,
     upgradeUnit,
   } = useGameContext();
   const selectedUnit = unitList.find((unit) => unit.id === selectedUnitId);
@@ -137,9 +138,12 @@ const Status = ({ y }: StatusProps) => {
         case 's':
           sellSelectedUnit();
           break;
+        case 'a':
+          sellAllBasicUnits();
+          break;
       }
     },
-    [generateUnit, sellSelectedUnit, upgradeStatus]
+    [generateUnit, sellAllBasicUnits, sellSelectedUnit, upgradeStatus]
   );
 
   const handleMouseEnter = useCallback(
@@ -337,6 +341,22 @@ const Status = ({ y }: StatusProps) => {
           />
           <Text x={32} fontSize={24} text="SELL" />
         </Group>
+        <Group
+          onMouseEnter={handleMouseEnter(`Sell all basic units.[A]`)}
+          onMouseLeave={handleMouseLeave}
+          x={WIDTH / 2 - 195}
+          y={32}
+          onClick={sellAllBasicUnits}
+          onTouchStart={sellAllBasicUnits}
+        >
+          <Image
+            image={icons.delete}
+            y={-8}
+            width={ICON_TILE_SIZE * 2}
+            height={ICON_TILE_SIZE * 2}
+          />
+          <Text x={32} fontSize={24} text="SELL BASIC UNITS" />
+        </Group>
       </Group>
     );
   }, [
@@ -344,6 +364,7 @@ const Status = ({ y }: StatusProps) => {
     handleMouseLeave,
     icons.delete,
     selectedUnit,
+    sellAllBasicUnits,
     sellSelectedUnit,
     upgradeUnit,
     y,
