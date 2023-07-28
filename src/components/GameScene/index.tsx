@@ -21,8 +21,8 @@ const GameScene = () => {
   const stageRef: ComponentProps<typeof Stage>['ref'] = useRef(null);
 
   useEffect(() => {
-    const scaleX = window.innerWidth / SCREEN_WIDTH;
-    const scaleY = window.innerHeight / SCREEN_HEIGHT;
+    const scaleX = document.body.clientWidth / SCREEN_WIDTH;
+    const scaleY = document.body.clientHeight / SCREEN_HEIGHT;
     const minScale = scaleX < scaleY ? scaleX : scaleY;
 
     stageRef.current.scale({
