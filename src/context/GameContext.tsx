@@ -84,7 +84,7 @@ type GameContext = GameStatus & IStatus & IUnit & IMob;
 const defaultGameStatusValue: GameStatus = {
   level: 1,
   life: 20,
-  money: 1000,
+  money: 10,
   moneyLevel: 1,
   power: 0,
   speed: 0,
