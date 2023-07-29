@@ -25,7 +25,7 @@ import {
   createNewUnit,
   getRandomFirstGradeUnit,
 } from '../lib/unit';
-import { SHOOTABLE_POSITION, map } from '../const/map';
+import { SHOOTABLE_POSITION, TILE_SIZE, map } from '../const/map';
 
 // resources
 import MobSpriteImg from '../assets/mob/mob.png';
@@ -452,10 +452,10 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
                 return {
                   x: mob.x,
                   y: mob.y,
-                  weight: Math.abs(mob.x - unit.x),
+                  weight: Math.abs(mob.x - unit.x * TILE_SIZE),
                 };
               })
-              .sort((a, b) => b.weight - a.weight);
+              .sort((a, b) => a.weight - b.weight);
             if (mobsInOrderClose.length === 0) continue;
 
             const newBullet = createNewBullet({

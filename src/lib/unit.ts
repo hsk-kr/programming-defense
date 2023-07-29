@@ -29,8 +29,6 @@ const getNextUnits = (unitName: UnitName): NextUnit[] => {
     }
   }
 
-  console.log(nextUnits);
-
   return nextUnits;
 };
 
