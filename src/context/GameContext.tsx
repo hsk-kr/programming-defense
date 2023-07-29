@@ -300,6 +300,8 @@ export const GameContextProvider = ({ children }: { children: ReactNode }) => {
 
   // Timer leveling up
   useEffect(() => {
+    if (gameEnd) return;
+
     let stageUp = false;
 
     timerIds.current.timer = setInterval(() => {
