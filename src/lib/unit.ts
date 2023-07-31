@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import units, { BULLET_LIFE, BULLET_SPEED_FASTEST } from '../const/unit';
 import { Bullet, NextUnit, Unit, UnitInfo, UnitName } from '../types/unit';
 import { TILE_SIZE } from '../const/map';
-import { MOB_SIZE } from '../const/mob';
+import { MOB_ONE_STEP_DISTANCE, MOB_SIZE } from '../const/mob';
 
 const getRandomFirstGradeUnit = (): Unit => {
   const firstGradeUnits: Unit[] = [];
@@ -77,8 +77,11 @@ const createNewBullet = ({
     TILE_SIZE * unit.x + TILE_SIZE / 2,
     TILE_SIZE * unit.y + TILE_SIZE / 2,
   ];
+  // Add some more randomly since mobs keep moving.
   const [mobCenterX, mobCenterY] = [
-    mobPos.x + MOB_SIZE / 2,
+    mobPos.x +
+      MOB_SIZE / 2 +
+      Math.floor(Math.random() * 5) * MOB_ONE_STEP_DISTANCE,
     mobPos.y + MOB_SIZE / 2,
   ];
   const degreeToTarget =
