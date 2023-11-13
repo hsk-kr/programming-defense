@@ -1,6 +1,6 @@
 # React Programming Defense
 
-[PLAY!](https://programming-defense.h-code.dev/)
+[PLAY!](https://programming-defense-hsk-kr.vercel.app/)
 
 This game is not finished. Since I developed fast without much concerns, there might be a lack of performance and many bugs.
 
