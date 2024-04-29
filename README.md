@@ -16,5 +16,8 @@ You can access the dev server by port 5173, which is a default port of vite dev 
 
 ## Play Guide
 
-- **How to create a tower:** You can pick a random tower by cliking the pick button.
-- **My towers don't attack:** Towers are supposed to be specific areas where are filled in blue. Click your tower and move it to the tile.
+- Use the "p" key to create a tower on the top left corner.
+- Click on the tower to select it.
+- Click on the destination tile to move the tower to the tile.
+
+https://github.com/3willows/programming-defense/assets/111284156/db37d7e0-4196-44e4-b0cc-282d29338dbd
